@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            overflow-y: auto; /* Ensure the page is scrollable */
+        }
+
+        #app {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #questions-container {
+            margin-bottom: 20px;
+        }
+
+        .question {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Welcome to Your Personal Assistant</h1>
+        <div id="questions-container">
+            <!-- Questions will be injected here -->
+        </div>
+        <button id="submit-answers">Submit Answers</button>
+        <div id="additional-questions-container" style="margin-top: 20px;"></div>
+        <button id="submit-additional-answers" style="display: none;">Submit Additional Answers</button>
+        <div id="profile-container" style="margin-top: 20px;"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const questionsContainer = document.getElementById('questions-container');
+            const submitButton = document.getElementById('submit-answers');
+            const additionalQuestionsContainer = document.getElementById('additional-questions-container');
+            const submitAdditionalButton = document.getElementById('submit-additional-answers');
+            const profileContainer = document.getElementById('profile-container');
+
+            const questions = [
+                "What's your name?",
+                "How old are you?",
+                "What are your hobbies?",
+                "What's your favorite book?",
+                "Describe your personality in a few words.",
+                "Do you prefer introverted or extroverted activities?",
+                "What's your favorite movie?",
+                "What's your favorite music genre?",
+                "Do you like to travel? If so, where is your favorite destination?",
+                "What is your dream job?",
+                "What are your strengths and weaknesses?",
+                "Do you have any pets? If so, what kind?",
+                "What's your favorite food?",
+                "What do you value most in a friendship?",
+                "How do you handle stress?",
+                "What motivates you?",
+                "What's a skill you'd like to learn and why?",
+                "Who do you admire the most and why?",
+                "What are your long-term goals?",
+                "How do you prefer to spend your free time?"
+            ];
+
+            // Inject questions into the DOM
+            questions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question');
+                questionElement.innerHTML = `
+                    <label for="question-${index}">${question}</label>
+                    <input type="text" id="question-${index}" name="question-${index}">
+                `;
+                questionsContainer.appendChild(questionElement);
+            });
+
+            // Handle initial form submission
+            submitButton.addEventListener('click', () => {
+                const answers = {};
+                questionsContainer.querySelectorAll('input').forEach((input, index) => {
+                    answers[`question-${index}`] = input.value;
+                });
+
+                fetch('/submit_initial_answers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(answers)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    additionalQuestionsContainer.innerHTML = '';
+                    data.additional_questions.forEach((question, index) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.classList.add('question');
+                        questionElement.innerHTML = `
+                            <label for="additional-question-${index}">${question}</label>
+                            <input type="text" id="additional-question-${index}" name="additional-question-${index}">
+                        `;
+                        additionalQuestionsContainer.appendChild(questionElement);
+                    });
+                    submitAdditionalButton.style.display = 'block';
+                });
+            });
+
+            // Handle additional form submission
+            submitAdditionalButton.addEventListener('click', () => {
+                const additionalAnswers = {};
+                additionalQuestionsContainer.querySelectorAll('input').forEach((input, index) => {
+                    additionalAnswers[`additional-question-${index}`] = input.value;
+                });
+
+                fetch('/submit_additional_answers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(additionalAnswers)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    profileContainer.innerHTML = `<pre>${JSON.stringify(data.profile, null, 2)}</pre>`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
