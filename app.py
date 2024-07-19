@@ -3,6 +3,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,11 +15,11 @@ CORS(app)  # Enable CORS for all routes
 openai_api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=openai_api_key)
 
+# In-memory cache for user data
 user_data = {
     "initial_answers": {},
     "additional_answers": {}
 }
-additional_questions = []
 
 @app.route('/')
 def serve_index():
