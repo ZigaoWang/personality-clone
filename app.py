@@ -51,31 +51,17 @@ def generate_additional_questions(data):
     return questions[:3]  # Return the first three questions
 
 def generate_profile(data):
-    profile = {
-        "name": data["initial_answers"].get("question-0"),
-        "age": data["initial_answers"].get("question-1"),
-        "hobbies": data["initial_answers"].get("question-2"),
-        "favorite_book": data["initial_answers"].get("question-3"),
-        "personality": data["initial_answers"].get("question-4"),
-        "social_preference": data["initial_answers"].get("question-5"),
-        "favorite_movie": data["initial_answers"].get("question-6"),
-        "favorite_music_genre": data["initial_answers"].get("question-7"),
-        "travel_preference": data["initial_answers"].get("question-8"),
-        "dream_job": data["initial_answers"].get("question-9"),
-        "strengths_weaknesses": data["initial_answers"].get("question-10"),
-        "pets": data["initial_answers"].get("question-11"),
-        "favorite_food": data["initial_answers"].get("question-12"),
-        "friendship_values": data["initial_answers"].get("question-13"),
-        "stress_handling": data["initial_answers"].get("question-14"),
-        "motivation": data["initial_answers"].get("question-15"),
-        "desired_skill": data["initial_answers"].get("question-16"),
-        "admired_person": data["initial_answers"].get("question-17"),
-        "long_term_goals": data["initial_answers"].get("question-18"),
-        "free_time_activities": data["initial_answers"].get("question-19"),
-        "additional_question_0": data["additional_answers"].get("additional-question-0"),
-        "additional_question_1": data["additional_answers"].get("additional-question-1"),
-        "additional_question_2": data["additional_answers"].get("additional-question-2")
-    }
+    # Combine initial and additional answers
+    combined_data = {**data["initial_answers"], **data["additional_answers"]}
+    prompt = f"Generate a detailed user profile based on the following data. The profile should be professional, easy to understand, and formatted in Markdown. Include sections such as Personal Information, Interests, Preferences, and Additional Details. Here is the user data:\n\n{combined_data}\n\nProfile (in Markdown):"
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    profile = response.choices[0].message.content.strip()
     return profile
 
 if __name__ == '__main__':
